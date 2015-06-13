@@ -5,13 +5,8 @@ class SQLObject
   class < self
 
     def columns
-      @columns ||= DBConnection.execute2(<<-SQL)
-        SELECT
-          *
-        FROM
-          #{self.table_name}
-      SQL
-        .first
+      @columns ||= DBConnection
+        .columns_for(table_name)
         .map(&:to_sym)
     end
 

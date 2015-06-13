@@ -39,6 +39,16 @@ class DBConnection
     instance.get_first_value(*args)
   end
 
+  def self.columns_for(table_name)
+    execute2(<<-SQL)
+      SELECT
+        *
+      FROM
+        #{table_name}
+    SQL
+      .first
+  end
+
   def self.last_insert_row_id
     instnace.last_insert_row_id
   end
