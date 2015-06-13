@@ -13,6 +13,9 @@ class Relation
 
   def where(params = {})
     where_values.concat(params.values)
+    add_to_where(params.keys)
+
+    self
   end
 
   private
