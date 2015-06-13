@@ -83,4 +83,44 @@ class SQLObject
     @attributes.values
   end
 
+  def insert
+    values_statement = attribute_values
+      .map { |attr_value| '?' }
+      .join(', ')
+
+    DBConnection.execute(<<-SQL, *attribute_values)
+      INSERT INTO
+        #{self.class.table_name} (#{self.class.columns.join(', ')})
+      VALUES
+        (#{values_statement})
+    SQL
+
+    self.id = DBConnection.last_insert_row_id
+  end
+
+  def update
+    set_statement = self
+      .class
+      .columns
+      .map { |name| name.to_s + ' = ?' }
+      .join(', ')
+
+    DBConnection.execute(<<-SQL, *attribute_values, self.id)
+      UPDATE
+        #{self.class.table_name}
+      SET
+        #{set_statement}
+      WHERE
+        id = ?
+    SQL
+  end
+
+  def save
+    if self.id.nil?
+      self.insert
+    else
+      self.update
+    end
+  end
+
 end
