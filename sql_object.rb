@@ -49,6 +49,19 @@ class SQLObject
       results.map { |result| self.new(result) }
     end
 
+    def find(id)
+      results = DBConnection.execute(<<-SQL, id)
+        SELECT
+          *
+        FROM
+          #{table_name}
+        WHERE
+          id = ?
+      SQL
+
+      results.emtpy? ? nil : self.new(results.first)
+    end
+
   end
 
   def initialize(params = {})
