@@ -19,9 +19,7 @@ class SQLObject
     end
 
     def finalize!
-
       columns.each do |name|
-
         attr_name = ('@' + name.to_s).to_sym
         getter_name = name
         setter_name = (name.to_s + '=').to_sym
@@ -33,15 +31,43 @@ class SQLObject
         define_method(setter_name) do |value|
           attributes[name] = value
         end
-
       end
+    end
 
+    def all
+      results = DBConnection.execute(<<-SQL)
+        SELECT
+          #{table_name}.*
+        FROM
+          #{table_name}
+      SQL
+
+      parse_all(results)
+    end
+
+    def parse_all(results)
+      results.map { |result| self.new(result) }
     end
 
   end
 
+  def initialize(params = {})
+    params.each do |name, value|
+      unless self.class.columns.include?(name.to_sym)
+        raise "unknown attribute '#{name}'"
+      end
+
+      setter_name = (name.to_s + '=').to_sym
+      self.send(setter_name, value)
+    end
+  end
+
   def attributes
     @attributes ||= {}
+  end
+
+  def attribute_values
+    @attributes.values
   end
 
 end
